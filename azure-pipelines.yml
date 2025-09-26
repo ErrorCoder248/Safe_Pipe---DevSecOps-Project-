@@ -1,0 +1,31 @@
+trigger:
+- main   # Run pipeline whenever you push to main branch
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+steps:
+# 1. Checkout code
+- task: UsePythonVersion@0
+  inputs:
+    versionSpec: '3.x'
+    addToPath: true
+
+- script: |
+    python --version
+    pip install --upgrade pip
+    pip install -r requirements.txt
+  displayName: 'Install dependencies'
+
+# 2. Run SafePipe scanner
+- script: |
+    echo "Running SafePipe secret scanner..."
+    python run_safe_pipe.py dummy_keys/test_keys.txt
+  displayName: 'Run SafePipe Scan'
+
+# 3. Publish scan results
+- task: PublishBuildArtifacts@1
+  inputs:
+    PathtoPublish: 'reports'
+    ArtifactName: 'scan-results'
+    publishLocation: 'Container'
