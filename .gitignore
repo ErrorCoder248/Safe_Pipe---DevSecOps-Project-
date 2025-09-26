@@ -1,13 +1,31 @@
-# Ignore Python cache
+# Python
 __pycache__/
 *.pyc
+*.pyo
+*.pyd
+*.db
+*.sqlite3
 
-# Ignore local environment
+# Virtual environments
+env/
+venv/
 safepipe-env/
+.venv/
 
-# Ignore reports output
+# macOS
+.DS_Store
+
+# VS Code settings
+.vscode/
+
+# Reports and generated files
 reports/*.json
+scan_results.json
 
-# Ignore virtual environment files (if created differently)
-.env
-.venv
+# Logs
+*.log
+
+# Environment & secrets
+*.env
+test_secrets.txt
+dummy_keys/test_keys.txt
