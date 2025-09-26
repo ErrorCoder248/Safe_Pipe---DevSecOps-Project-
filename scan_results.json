@@ -1,0 +1,26 @@
+[
+    {
+        "type": "Private Key",
+        "value": "-----BEGIN PRIVATE KEY-----",
+        "file": "test_secrets.txt",
+        "severity": "Critical"
+    },
+    {
+        "type": "Password",
+        "value": "password='MyP@ssw0rd!'",
+        "file": "test_secrets.txt",
+        "severity": "Low"
+    },
+    {
+        "type": "Token",
+        "value": "",
+        "file": "test_secrets.txt",
+        "severity": "Low"
+    },
+    {
+        "type": "Token",
+        "value": "",
+        "file": "test_secrets.txt",
+        "severity": "Low"
+    }
+]
