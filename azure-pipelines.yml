@@ -1,31 +1,23 @@
 trigger:
-- main   # Run pipeline whenever you push to main branch
+- main   # or master, adjust based on your branch
 
 pool:
-  vmImage: 'ubuntu-latest'
+  name: Default   # this matches the agent pool where your Mac agent will be registered
+  demands:
+  - agent.os -equals Darwin   # ensures the job runs only on macOS agents
 
 steps:
-# 1. Checkout code
+- script: echo "✅ Running on self-hosted Mac agent"
+  displayName: "Verify agent connection"
+
+# Example: Python setup (since SafePipe uses Python)
 - task: UsePythonVersion@0
   inputs:
     versionSpec: '3.x'
-    addToPath: true
+  displayName: "Set up Python"
 
 - script: |
     python --version
-    pip install --upgrade pip
     pip install -r requirements.txt
-  displayName: 'Install dependencies'
-
-# 2. Run SafePipe scanner
-- script: |
-    echo "Running SafePipe secret scanner..."
-    python run_safe_pipe.py dummy_keys/test_keys.txt
-  displayName: 'Run SafePipe Scan'
-
-# 3. Publish scan results
-- task: PublishBuildArtifacts@1
-  inputs:
-    PathtoPublish: 'reports'
-    ArtifactName: 'scan-results'
-    publishLocation: 'Container'
+    python scanner.py
+  displayName: "Run SafePipe Scanner"
