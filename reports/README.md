@@ -5,6 +5,7 @@ SafePipe is a Python-based tool that detects sensitive information like API keys
 1. **Streamlit Dashboard** – Visual metrics, color-coded severity, downloadable JSON reports.
 2. **Headless Scanner** – Can be integrated into CI/CD pipelines (Azure DevOps, etc.).
 3. **Reusable Core Logic** – Shared scanning engine for both dashboard and pipeline.
+4. Successfully Deployed in Render  
 
 ## Folder Structure
 
@@ -16,3 +17,4 @@ SafePipe is a Python-based tool that detects sensitive information like API keys
 - `reports/` – Output JSON reports
 - `requirements.txt` – Python dependencies
 - `README.md` – Project documentation
+  
