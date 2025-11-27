@@ -1,4 +1,3 @@
-Here is the **same full README-style documentation**, rewritten professionally **for your project: SafePipe – Secret Leak Detection & Alerting System**.
 
 ---
 
