@@ -45,24 +45,70 @@ Built with **FastAPI**, **React**, and **Python-based scanners**, SafePipe ensur
 
 ```
 safepipe/
-├── backend/                        # FastAPI backend
-│   ├── main.py                     # Entry point
-│   ├── api/                        # API routes
-│   ├── scanner/                    # Secret detection engine
-│   ├── models/                     # Database models
-│   ├── utils/                      # Helper functions
-│   └── config/                     # Email, Slack, DB config
 │
-├── dashboard/                      # React frontend
-│   ├── components/                 # Reusable UI components
-│   ├── pages/                      # Dashboard pages
-│   ├── services/                   # API communication
-│   └── App.jsx                     # Frontend entry point
+├── scanner-backend/                # Python FastAPI + Secret Scanner Engine
+│   ├── main.py
+│   ├── api/
+│   ├── scanner/                    # All secret detection logic
+│   ├── utils/
+│   ├── models/
+│   ├── config/
+│   ├── reports/
+│   ├── requirements.txt
+│   └── Dockerfile
 │
-├── docs/                           # Documentation & screenshots
-├── scripts/                        # CI/CD scripts
-├── .github/workflows/              # GitHub Actions workflows
+├── ci-pipeline/                    # TypeScript CI/CD Webhook + Job Engine
+│   ├── src/
+│   │   ├── index.ts
+│   │   ├── routes/
+│   │   │   └── github.ts
+│   │   ├── workers/
+│   │   │   └── scannerWorker.ts
+│   │   ├── services/
+│   │   │   └── repoClone.ts
+│   │   ├── utils/
+│   │   │   └── queue.ts
+│   │   └── config.ts
+│   ├── package.json
+│   ├── tsconfig.json
+│   ├── Dockerfile
+│   └── README.md
+│
+├── dashboard/                       # React Dashboard (Results Viewer)
+│   ├── components/
+│   ├── pages/
+│   ├── services/
+│   └── App.jsx
+│
+├── jobs/                            # Shared schemas between services
+│   └── scan_job_schema.json
+│
+├── deployments/                     # Docker + Kubernetes in future
+│   ├── docker-compose.dev.yml
+│   ├── scanner-backend.dockerfile
+│   ├── ci-pipeline.dockerfile
+│   ├── dashboard.dockerfile
+│
+├── docs/                            # Documentation & diagrams
+│   ├── architecture/
+│   ├── workflows/
+│   └── screenshots/
+│
+├── scripts/                         # Automation scripts
+│   ├── deploy_scanner.sh
+│   ├── deploy_ci.sh
+│   └── testing/
+│
+├── tests/                           # Optional unit/integration tests
+│
+├── .github/workflows/               # CICD for GitHub
+│   ├── scanner-ci.yml
+│   ├── ci-pipeline-ci.yml
+│   └── dashboard-ci.yml
+│
 └── README.md
+
+ 
 ```
 
 ---
