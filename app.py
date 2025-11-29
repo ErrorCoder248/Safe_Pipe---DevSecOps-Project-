@@ -38,23 +38,29 @@ COLOR_MAP = {
 }
 
 # ---------- Scanner Logic ----------
-def scan_file(file_path):
+def scan_content(content, source="<memory>"):
+    """Scan a text content string and return findings.
+
+    Returns list of dicts with keys: type, value (string), file (source), severity.
+    """
     findings = []
     try:
-        with open(file_path, "r", errors="ignore") as f:
-            content = f.read()
-            for secret_name, pattern in SECRET_PATTERNS.items():
-                matches = re.findall(pattern, content)
-                for match in matches:
-                    severity = SEVERITY_MAP.get(secret_name, "Low")
-                    findings.append({
-                        "type": secret_name,
-                        "value": match,
-                        "file": file_path,
-                        "severity": severity
-                    })
+        for secret_name, pattern in SECRET_PATTERNS.items():
+            for m in re.finditer(pattern, content, flags=0):
+                # Use full matched text, not capture groups
+                try:
+                    value = m.group(0)
+                except Exception:
+                    value = m.group()
+                severity = SEVERITY_MAP.get(secret_name, "Low")
+                findings.append({
+                    "type": secret_name,
+                    "value": str(value),
+                    "file": source,
+                    "severity": severity
+                })
     except Exception as e:
-        st.error(f"Error reading {file_path}: {e}")
+        st.error(f"Error scanning content from {source}: {e}")
     return findings
 
 # ---------- Summary Logic ----------
@@ -66,15 +72,28 @@ def summarize_findings(findings):
     severity_counts = Counter([item["severity"] for item in findings])
     return total, type_counts, files, severity_counts
 
+
+def mask_value(val, show_full=False):
+    try:
+        s = str(val)
+    except Exception:
+        s = ''
+    if show_full or len(s) <= 10:
+        return s
+    # single-line mask: keep first 4 and last 4
+    return f"{s[:4]}...{s[-4:]}"
+
 # ---------- Sidebar: File Selection ----------
 st.sidebar.header("Scan Options")
 uploaded_file = st.sidebar.file_uploader("Upload a file for scanning", type=["txt", "py", "js", "env"])
 use_demo_file = st.sidebar.checkbox("Use demo test file (`test_secrets.txt`)", value=True)
+show_full = st.sidebar.checkbox("Show full secret values (warning: exposes secrets)", value=False)
 
 # ---------- Prepare Demo File ----------
 file_path = None
 if uploaded_file:
-    file_path = uploaded_file
+    # keep uploaded_file as-is; we'll read its bytes when scanning
+    file_path = None
 elif use_demo_file:
     file_path = "test_secrets.txt"
     try:
@@ -96,7 +115,25 @@ if st.button("Start Scan"):
         st.error("Please upload a file or select demo file.")
     else:
         st.info("Scanning file, please wait...")
-        findings = scan_file(file_path)
+
+        # Determine source and content depending on uploaded file vs demo file
+        findings = []
+        if uploaded_file is not None:
+            try:
+                raw = uploaded_file.read()
+                # uploaded_file.read() returns bytes; decode safely
+                content = raw.decode('utf-8', errors='ignore') if isinstance(raw, (bytes, bytearray)) else str(raw)
+                source = getattr(uploaded_file, 'name', '<uploaded>')
+                findings = scan_content(content, source=source)
+            except Exception as e:
+                st.error(f"Error reading uploaded file: {e}")
+        elif file_path:
+            try:
+                with open(file_path, 'r', errors='ignore') as f:
+                    content = f.read()
+                findings = scan_content(content, source=file_path)
+            except Exception as e:
+                st.error(f"Error reading {file_path}: {e}")
 
         # ---------- Summary ----------
         total, type_counts, files, severity_counts = summarize_findings(findings)
@@ -113,32 +150,19 @@ if st.button("Start Scan"):
         type_table = {k: v for k, v in type_counts.items()}
         st.table(type_table)
 
-        # ---------- Full Details Table with Severity Color ----------
+        # ---------- Full Details Table (masked by default) ----------
         st.subheader("Full Scan Results")
         if total > 0:
             results_data = []
             for item in findings:
-                color = COLOR_MAP.get(item["severity"], "green")
                 results_data.append({
-                    "Type": f"**{item['type']}**",
-                    "Value": f"<span style='color:{color}'>{item['value']}</span>",
+                    "Type": item['type'],
+                    # mask value unless user explicitly wants full values
+                    "Value": mask_value(item.get('value', ''), show_full=show_full),
                     "Severity": item["severity"],
                     "File": item["file"]
                 })
-            st.markdown("""
-                <style>
-                .dataframe tbody tr th:only-of-type {
-                    vertical-align: middle;
-                }
-                .dataframe tbody tr th {
-                    vertical-align: top;
-                }
-                .dataframe thead th {
-                    text-align: left;
-                }
-                </style>
-            """, unsafe_allow_html=True)
-            st.dataframe(results_data)
+            st.table(results_data)
         else:
             st.success("No secrets found!")
 
